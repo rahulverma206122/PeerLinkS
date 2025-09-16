@@ -1,102 +1,137 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import FileUpload from '@/components/FileUpload';
+import FileDownload from '@/components/FileDownload';
+import InviteCode from '@/components/InviteCode';
+import axios from 'axios';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'upload' | 'download'>('upload');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // Upload
+  const handleFileUpload = async (file: File) => {
+    setUploadedFile(file);
+    setIsUploading(true);
+    setInviteCode(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post('/api/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      // Corrected here: backend returns `inviteCode`
+      setInviteCode(response.data.inviteCode);
+    } catch (err) {
+      console.error('Upload error:', err);
+      alert('Failed to upload file. Try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Download
+  const handleDownload = async (code: string) => {
+    setIsDownloading(true);
+
+    try {
+      const response = await axios.get(`/api/download/${code}`, {
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+
+      const disposition = response.headers['content-disposition'];
+      let filename = 'downloaded-file';
+      if (disposition) {
+        const match = disposition.match(/filename="(.+)"/);
+        if (match) filename = match[1];
+      }
+
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error('Download error:', err);
+      alert('Failed to download file. Check the invite code.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <header className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-blue-600 mb-2">PeerLink</h1>
+        <p className="text-xl text-gray-600">Secure P2P File Sharing</p>
+      </header>
+
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="flex border-b mb-6">
+          <button
+            className={`px-4 py-2 font-medium ${
+              activeTab === 'upload'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab('upload')}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Share a File
+          </button>
+          <button
+            className={`px-4 py-2 font-medium ${
+              activeTab === 'download'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab('download')}
           >
-            Read our docs
-          </a>
+            Receive a File
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+        {activeTab === 'upload' ? (
+          <div>
+            <FileUpload onFileUpload={handleFileUpload} isUploading={isUploading} />
+
+            {uploadedFile && !isUploading && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                <p className="text-sm text-gray-600">
+                  Selected file: <span className="font-medium">{uploadedFile.name}</span> ({Math.round(uploadedFile.size / 1024)} KB)
+                </p>
+              </div>
+            )}
+
+            {isUploading && (
+              <div className="mt-6 text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                <p className="mt-2 text-gray-600">Uploading file...</p>
+              </div>
+            )}
+
+            {inviteCode && !isUploading && (
+              <InviteCode code={inviteCode} />
+            )}
+          </div>
+        ) : (
+          <div>
+            <FileDownload onDownload={handleDownload} isDownloading={isDownloading} />
+          </div>
+        )}
+      </div>
+
+      <footer className="mt-12 text-center text-gray-500 text-sm">
+        <p>PeerLink &copy; {new Date().getFullYear()} - Secure P2P File Sharing</p>
       </footer>
     </div>
   );
