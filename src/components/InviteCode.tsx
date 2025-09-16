@@ -26,15 +26,15 @@ export default function InviteCode({ code }: InviteCodeProps) {
       </p>
 
       <div className="flex items-center">
-        <div className="flex-1 bg-white p-3 rounded-l-md border border-r-0 border-gray-300 font-mono text-lg text-gray-900">
+        <div className="flex-1 bg-white p-3 rounded-l-md border border-r-0 border-gray-300 font-mono text-lg text-black">
           {code}
         </div>
         <button
           onClick={copyToClipboard}
-          className="p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-r-md transition-colors"
+          className="p-3 bg-blue-500 hover:bg-blue-700 text-white rounded-r-md transition-colors"
           aria-label="Copy invite code"
         >
-          {copied ? <FiCheck className="w-5 h-5" /> : <FiCopy className="w-5 h-5" />}
+          {copied ? <FiCheck className="w-6 h-6" /> : <FiCopy className="w-7 h-7" />}
         </button>
       </div>
 

@@ -27,8 +27,8 @@ export function saveFile(fileBuffer: Buffer, originalName: string): string {
 
   fs.writeFileSync(filePath, fileBuffer);
 
-  // Generate a 6-character invite code
-  const inviteCode = Math.random().toString(36).substring(2, 8);
+  // Generate a 4-character invite code
+  const inviteCode = Math.floor(1000 + Math.random() * 9000).toString();
 
   // Persist mapping
   addFile(inviteCode, uniqueFilename);

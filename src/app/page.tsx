@@ -72,7 +72,7 @@ export default function Home() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-blue-600 mb-2">PeerLink</h1>
+        <h1 className="mt-40 md:mt-0 text-3xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-300 to-neutral-700">QuickDrop</h1>
         <p className="text-xl text-gray-600">Secure P2P File Sharing</p>
       </header>
 
@@ -131,7 +131,7 @@ export default function Home() {
       </div>
 
       <footer className="mt-12 text-center text-gray-500 text-sm">
-        <p>PeerLink &copy; {new Date().getFullYear()} - Secure P2P File Sharing</p>
+        <p>QuickDrop &copy; {new Date().getFullYear()} - Secure P2P File Sharing</p>
       </footer>
     </div>
   );
