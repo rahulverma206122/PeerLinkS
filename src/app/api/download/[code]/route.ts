@@ -3,9 +3,11 @@ import { getFile } from "@/lib/fileStore";
 import fs from "fs";
 import path from "path";
 
-export async function GET(req: NextRequest, context: { params: { code: string } }) {
-  // Await the params properly
-  const { code } = await context.params;
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ code: string }> } // ✅ params is now a Promise
+) {
+  const { code } = await context.params; // ✅ await the promise
 
   if (!code) {
     return NextResponse.json({ error: "No code provided" }, { status: 400 });
